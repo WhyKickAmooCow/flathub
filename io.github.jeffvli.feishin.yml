@@ -1,4 +1,4 @@
-app-id: org.jeffvli.feishin
+app-id: io.github.jeffvli.feishin
 runtime: org.freedesktop.Platform
 runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
@@ -123,8 +123,8 @@ modules:
         done
       - cp -ar . /app/main
       - install -Dm 644 ../flatpak/default.json /app/main/resources/default.json
-      - install -Dm 644 ../flatpak/org.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
-      - install -Dm 644 ../flatpak/org.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm 644 ../flatpak/io.github.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm 644 ../flatpak/io.github.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
       - install -Dm 755 ../feishin.sh /app/bin/feishin
     sources:
       - type: archive

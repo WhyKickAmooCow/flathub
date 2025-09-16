@@ -1,6 +1,6 @@
 [Flatpak Ref]
 Title=Feishin
-Name=org.jeffvli.feishin
+Name=io.github.jeffvli.feishin
 Url=https://whykickamoocow.github.io/flathub/
 SuggestRemoteName=feishin
 Homepage=https://github.com/WhyKickAmooCow/flathub
