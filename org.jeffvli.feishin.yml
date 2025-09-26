@@ -78,8 +78,8 @@ modules:
                 x-checker-data:
                   type: git
                   tag-pattern: ^([\d.]+)$
-                commit: 8a85691a0740d390761a1008b4696f57facd02c4
-                tag: 15.4.0
+                commit: a57276bf558f5cf94d3a9854ebdf5a2236849a5a
+                tag: 16.0.0
       - name: libass
         config-opts:
           - --enable-shared
