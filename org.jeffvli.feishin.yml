@@ -11,6 +11,9 @@ add-build-extensions:
   org.freedesktop.Platform.ffmpeg-full:
     version: "24.08"
 
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node24
+
 finish-args:
   - --device=dri
   - --share=ipc
@@ -30,137 +33,161 @@ finish-args:
   - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
 
 modules:
-  - name: mpv
-    buildsystem: simple
-    build-commands:
-      - meson setup build
-      - meson configure build -Dbuildtype=release -Ddebug=false -Dstrip=true -Dbuild-date=false -Dmanpage-build=disabled -Dprefix=/app
-      - meson compile -C build
-      - meson install -C build
-    cleanup:
-      - /lib/pkgconfig
-      - /share
-      - /include
-    sources:
-      - type: git
-        url: https://github.com/mpv-player/mpv.git
-        x-checker-data:
-          type: git
-          tag-pattern: ^v([\d.]+)$
-        commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
-        tag: v0.40.0
-    modules:
-      - name: libplacebo
-        buildsystem: meson
-        cleanup:
-          - /include
-          - /lib/pkgconfig
-        sources:
-          - type: git
-            url: https://github.com/haasn/libplacebo.git
-            x-checker-data:
-              type: git
-              tag-pattern: ^v([\d.]+)$
-            commit: 3188549fba13bbdf3a5a98de2a38c2e71f04e21e
-            tag: v7.351.0
-        modules:
-          - name: glslang
-            buildsystem: cmake-ninja
-            config-opts:
-              - -DBUILD_SHARED_LIBS=ON
-              - -DENABLE_OPT=0
-            cleanup:
-              - /bin
-              - /include
-              - /lib/cmake
-            sources:
-              - type: git
-                url: https://github.com/KhronosGroup/glslang.git
-                x-checker-data:
-                  type: git
-                  tag-pattern: ^([\d.]+)$
-                commit: 8a85691a0740d390761a1008b4696f57facd02c4
-                tag: 15.4.0
-      - name: libass
-        config-opts:
-          - --enable-shared
-          - --disable-static
-        cleanup:
-          - /lib/*.la
-          - /lib/pkgconfig
-          - /include
-        sources:
-          - type: git
-            url: https://github.com/libass/libass.git
-            x-checker-data:
-              type: git
-              tag-pattern: ^([\d.]+)$
-            commit: bbb3c7f1570a4a021e52683f3fbdf74fe492ae84
-            tag: 0.17.4
-  - name: jq
-    buildsystem: simple
-    subdir: main
-    build-commands:
-      - install -Dm 755 jq-linux-amd64 /app/bin/jq
-    sources:
-      - type: file
-        url: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64
-        sha256: 020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d
-        dest: main
-        x-checker-data:
-          type: json
-          url: https://api.github.com/repos/jqlang/jq/releases/latest
-          tag-query: .tag_name
-          version-query: $tag | sub("^v"; "")
-          url-query: .assets[] | select(.name == "jq-linux-amd64") | .browser_download_url
+  # - name: mpv
+  #   buildsystem: simple
+  #   build-commands:
+  #     - meson setup build
+  #     - meson configure build -Dbuildtype=release -Ddebug=false -Dstrip=true -Dbuild-date=false -Dmanpage-build=disabled -Dprefix=/app
+  #     - meson compile -C build
+  #     - meson install -C build
+  #   cleanup:
+  #     - /lib/pkgconfig
+  #     - /share
+  #     - /include
+  #   sources:
+  #     - type: git
+  #       url: https://github.com/mpv-player/mpv.git
+  #       x-checker-data:
+  #         type: git
+  #         tag-pattern: ^v([\d.]+)$
+  #       commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
+  #       tag: v0.40.0
+  #   modules:
+  #     - name: libplacebo
+  #       buildsystem: meson
+  #       cleanup:
+  #         - /include
+  #         - /lib/pkgconfig
+  #       sources:
+  #         - type: git
+  #           url: https://github.com/haasn/libplacebo.git
+  #           x-checker-data:
+  #             type: git
+  #             tag-pattern: ^v([\d.]+)$
+  #           commit: 3188549fba13bbdf3a5a98de2a38c2e71f04e21e
+  #           tag: v7.351.0
+  #       modules:
+  #         - name: glslang
+  #           buildsystem: cmake-ninja
+  #           config-opts:
+  #             - -DBUILD_SHARED_LIBS=ON
+  #             - -DENABLE_OPT=0
+  #           cleanup:
+  #             - /bin
+  #             - /include
+  #             - /lib/cmake
+  #           sources:
+  #             - type: git
+  #               url: https://github.com/KhronosGroup/glslang.git
+  #               x-checker-data:
+  #                 type: git
+  #                 tag-pattern: ^([\d.]+)$
+  #               commit: 8a85691a0740d390761a1008b4696f57facd02c4
+  #               tag: 15.4.0
+  #     - name: libass
+  #       config-opts:
+  #         - --enable-shared
+  #         - --disable-static
+  #       cleanup:
+  #         - /lib/*.la
+  #         - /lib/pkgconfig
+  #         - /include
+  #       sources:
+  #         - type: git
+  #           url: https://github.com/libass/libass.git
+  #           x-checker-data:
+  #             type: git
+  #             tag-pattern: ^([\d.]+)$
+  #           commit: bbb3c7f1570a4a021e52683f3fbdf74fe492ae84
+  #           tag: 0.17.4
+  # - name: jq
+  #   buildsystem: simple
+  #   subdir: main
+  #   build-commands:
+  #     - install -Dm 755 jq-linux-amd64 /app/bin/jq
+  #   sources:
+  #     - type: file
+  #       url: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64
+  #       sha256: 020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d
+  #       dest: main
+  #       x-checker-data:
+  #         type: json
+  #         url: https://api.github.com/repos/jqlang/jq/releases/latest
+  #         tag-query: .tag_name
+  #         version-query: $tag | sub("^v"; "")
+  #         url-query: .assets[] | select(.name == "jq-linux-amd64") | .browser_download_url
 
   - name: feishin
     buildsystem: simple
     subdir: main
+    build-options:
+      append-path: /usr/lib/sdk/node24/bin:/run/build/feishin/bin
+      env:
+        HOME: /run/build/feishin
+        XDG_CACHE_HOME: /run/build/feishin/flatpak-node/cache
+        npm_config_cache: /run/build/feishin/flatpak-node/npm-cache
+        npm_config_nodedir: /usr/lib/sdk/node24
+        npm_config_offline: "true"
     build-commands:
+      - chmod 755 ../pnpm
+      - mkdir ../bin && mv ../pnpm ../bin/
+      - pnpm install --loglevel debug --offline --frozen-lockfile --store-dir $npm_config_cache
+      - npm ci --offline --cache=$FLATPAK_BUILDER_BUILDDIR/flatpak-node/npm-cache
+      - |
+        . ../flatpak-node/electron-builder-arch-args.sh
+        npm run package:linux -- $ELECTRON_BUILDER_ARCH_ARGS  --linux --dir
       - >
-        for i in 128x128 256x256 512x512; do 
-          install -Dm 644 resources/assets/icons/${i}.png /app/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
+        for i in 128x128 256x256 512x512; do
+          install -Dm 644 dist/linux-unpacked/resources/assets/icons/${i}.png /app/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
         done
-      - cp -ar . /app/main
+      - cp -ar dist/linux-unpacked /app/main
       - install -Dm 644 ../flatpak/default.json /app/main/resources/default.json
       - install -Dm 644 ../flatpak/org.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
       - install -Dm 644 ../flatpak/org.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
       - install -Dm 755 ../feishin.sh /app/bin/feishin
     sources:
-      - type: archive
-        url: https://github.com/jeffvli/feishin/releases/download/v0.20.1/Feishin-linux-x64.tar.xz
-        sha256: 48fd0caf925396b0261da4ad71a5e5a54fdaf3f97bb4117aa8f286f2e55ebeb5
+      - type: file
+        url: https://github.com/pnpm/pnpm/releases/download/v10.18.2/pnpm-linux-x64
+        dest-filename: pnpm
+        subdir: main
+        sha256: fe6261c86aba26c241dcbf514b011df77f4274d0556b96eaac19d44bb0a255ac
+        only-arches:
+          - x86_64
+      - type: file
+        path: package-lock.json
+        dest: main
+      - type: git
+        url: https://github.com/jeffvli/feishin
         dest: main
         x-checker-data:
-          type: json
-          url: https://api.github.com/repos/jeffvli/feishin/releases/latest
-          tag-query: .tag_name
-          version-query: $tag | sub("^v"; "")
-          url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
-      - type: dir
-        path: .
-        dest: flatpak
-      - type: script
-        dest-filename: feishin.sh
-        commands:
-          - >
-            for i in {0..9}; do
-                test -S $XDG_RUNTIME_DIR/discord-ipc-$i || ln -sf {app/com.discordapp.Discord,$XDG_RUNTIME_DIR}/discord-ipc-$i;
-            done
-          - mkdir -p $XDG_CONFIG_HOME/feishin/ && cp -n /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json
-          # Merge default.json and existing.json if it exists
-          - >
-            {
-              /app/bin/jq -sS '.[0] * .[1]' /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json > /tmp/config.json
-              mv /tmp/config.json $XDG_CONFIG_HOME/feishin/config.json
-            } || true
-          - LAUNCH_ARGS=--ozone-platform-hint=auto
-          - |
-            gpu=$(lspci | grep -i '.* vga .* nvidia .*')
-            shopt -s nocasematch
-            if [[ $gpu == *' nvidia '* ]]; then
-              echo "Nvidia GPU is present, disabling wayland support"
-              LAUNCH_ARGS=""
-            fi
-          - zypak-wrapper /app/main/feishin $LAUNCH_ARGS
+          type: git
+          tag-pattern: ^v([\d.]+)$
+        commit: b16e57710b28e4359b5f0f5c2528566dfad36827
+        tag: v0.21.2
+      - generated-sources.json
+      # - type: dir
+      #   path: .
+      #   dest: flatpak
+      # - type: script
+      #   dest-filename: feishin.sh
+      #   commands:
+      #     - >
+      #       for i in {0..9}; do
+      #           test -S $XDG_RUNTIME_DIR/discord-ipc-$i || ln -sf {app/com.discordapp.Discord,$XDG_RUNTIME_DIR}/discord-ipc-$i;
+      #       done
+      #     - mkdir -p $XDG_CONFIG_HOME/feishin/ && cp -n /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json
+      #     # Merge default.json and existing.json if it exists
+      #     - >
+      #       {
+      #         /app/bin/jq -sS '.[0] * .[1]' /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json > /tmp/config.json
+      #         mv /tmp/config.json $XDG_CONFIG_HOME/feishin/config.json
+      #       } || true
+      #     - LAUNCH_ARGS=--ozone-platform-hint=auto
+      #     - |
+      #       gpu=$(lspci | grep -i '.* vga .* nvidia .*')
+      #       shopt -s nocasematch
+      #       if [[ $gpu == *' nvidia '* ]]; then
+      #         echo "Nvidia GPU is present, disabling wayland support"
+      #         LAUNCH_ARGS=""
+      #       fi
+      #     - zypak-wrapper /app/main/feishin/feishin $LAUNCH_ARGS
