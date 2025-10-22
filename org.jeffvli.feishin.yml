@@ -7,6 +7,9 @@ base-version: "25.08"
 command: feishin
 separate-locales: false
 
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node24
+
 finish-args:
   - --device=dri
   - --share=ipc
@@ -96,31 +99,46 @@ modules:
 
   - name: feishin
     buildsystem: simple
-    subdir: main
+    build-options:
+      append-path: /usr/lib/sdk/node24/bin
+      env:
+        XDG_CACHE_HOME: /run/build/feishin/flatpak-node/cache
+        npm_config_cache: /run/build/feishin/flatpak-node/npm-cache
+        npm_config_offline: "true"
+        npm_config_nodedir: /run/build/feishin/flatpak-node/cache/node-gyp/37.7.0
+    subdir: build
     build-commands:
+      - ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp
+      - npm i
+      - npm run build
+      - . /run/build/feishin/flatpak-node/electron-builder-arch-args.sh; npx electron-builder --linux dir $ELECTRON_BUILDER_ARCH_ARGS
       - >
-        for i in 128x128 256x256 512x512; do 
-          install -Dm 644 resources/assets/icons/${i}.png /app/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
+        for i in 128x128 256x256 512x512; do
+          install -Dm 644 dist/linux-unpacked/resources/assets/icons/${i}.png /app/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
         done
-      - cp -ar . /app/main
-      - install -Dm 644 ../flatpak/default.json /app/main/resources/default.json
-      - install -Dm 644 ../flatpak/org.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
-      - install -Dm 644 ../flatpak/org.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - cp -ar dist/linux-unpacked /app/main
+      - install -Dm 644 flatpak/org.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm 644 flatpak/org.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm 644 ../default.json /app/main/resources/default.json
       - install -Dm 755 ../feishin.sh /app/bin/feishin
     sources:
-      - type: archive
-        url: https://github.com/jeffvli/feishin/releases/download/v0.21.1/Feishin-linux-x64.tar.xz
-        sha256: 3cdbd79b9a8efb6a111fd14144614663576c94af97bcf62aefe4a7c3c45fe8a2
-        dest: main
-        x-checker-data:
-          type: json
-          url: https://api.github.com/repos/jeffvli/feishin/releases/latest
-          tag-query: .tag_name
-          version-query: $tag | sub("^v"; "")
-          url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
+      - generated-sources.json
       - type: dir
-        path: .
-        dest: flatpak
+        path: ../feishin
+        dest: build
+      # - type: archive
+      #   url: https://github.com/jeffvli/feishin/releases/download/v0.21.1/Feishin-linux-x64.tar.xz
+      #   sha256: 3cdbd79b9a8efb6a111fd14144614663576c94af97bcf62aefe4a7c3c45fe8a2
+      #   dest: main
+      #   x-checker-data:
+      #     type: json
+      #     url: https://api.github.com/repos/jeffvli/feishin/releases/latest
+      #     tag-query: .tag_name
+      #     version-query: $tag | sub("^v"; "")
+      #     url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
+      - type: file
+        path: default.json
+        dest-filename: default.json
       - type: script
         dest-filename: feishin.sh
         commands:
@@ -135,4 +153,4 @@ modules:
               /app/bin/jq -sS '.[0] * .[1]' /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json > /tmp/config.json
               mv /tmp/config.json $XDG_CONFIG_HOME/feishin/config.json
             } || true
-          - zypak-wrapper /app/main/feishin $LAUNCH_ARGS
+          - zypak-wrapper /app/main/feishin
