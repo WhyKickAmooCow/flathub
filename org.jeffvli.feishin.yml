@@ -99,8 +99,8 @@ modules:
       - install -Dm 755 ../feishin.sh /app/bin/feishin
     sources:
       - type: archive
-        url: https://github.com/jeffvli/feishin/releases/download/v1.3.0/Feishin-linux-x64.tar.xz
-        sha256: c1327bb6bd44b564bbac924efe24f6a9f28077779d63e46838916f09bc348376
+        url: https://github.com/jeffvli/feishin/releases/download/v1.6.0/Feishin-linux-x64.tar.xz
+        sha256: dbef45621019136697b562a201ef3e48194b00e5fa8036c2754a74b7ab4630af
         dest: main
         only-arches:
           - x86_64
@@ -112,8 +112,8 @@ modules:
           url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
       - type: git
         url: https://github.com/jeffvli/feishin.git
-        tag: v1.3.0
-        commit: c5d2c60d706c26870590da363162ea0c0239a40c
+        tag: v1.6.0
+        commit: 289f307a52363eb595cb678ae78a60120658c26a
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
