@@ -7,9 +7,6 @@ base-version: "25.08"
 command: feishin
 separate-locales: false
 
-sdk-extensions:
-  - org.freedesktop.Sdk.Extension.node24
-
 finish-args:
   - --device=dri
   - --share=ipc
@@ -24,6 +21,18 @@ finish-args:
   - --talk-name=org.kde.kwalletd5
   - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
 
+cleanup:
+  - /share/applications/mpv.desktop
+  - /share/icons/*/*/apps/mpv*
+  - /share/metainfo/mpv.metainfo.xml
+  - /share/bash-completion
+  - /share/doc
+  - /share/fish
+  - /share/zsh
+  - /include
+  - /lib/pkgconfig
+  - /lib/*.la
+
 modules:
   - name: mpv
     buildsystem: meson
@@ -33,45 +42,36 @@ modules:
       - -Dstrip=true
       - -Dbuild-date=false
       - -Dmanpage-build=disabled
-    cleanup:
-      - /lib/pkgconfig
-      - /share
-      - /include
     sources:
       - type: git
         url: https://github.com/mpv-player/mpv.git
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
-        commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
-        tag: v0.40.0
+        commit: 41f6a645068483470267271e1d09966ca3b9f413
+        tag: v0.41.0
+    post-install:
+      - install -Dm0644 ../LICENSE.LGPL -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/mpv
     modules:
       - name: libplacebo
         buildsystem: meson
         config-opts:
           - -Ddemos=false
           - -Dshaderc=disabled
-        cleanup:
-          - /include
-          - /lib/pkgconfig
         sources:
           - type: git
             url: https://github.com/haasn/libplacebo.git
             x-checker-data:
               type: git
               tag-pattern: ^v([\d.]+)$
-            commit: 3188549fba13bbdf3a5a98de2a38c2e71f04e21e
-            tag: v7.351.0
-          - type: patch
-            path: "0001-vulkan-utils_gen-fix-for-python-3.14.patch"
+            commit: b2ea27dceb6418aabfe9121174c6dbb232942998
+            tag: v7.360.0
+        post-install:
+          - install -Dm0644 ../LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/libplacebo
       - name: libass
         config-opts:
           - --enable-shared
           - --disable-static
-        cleanup:
-          - /lib/*.la
-          - /lib/pkgconfig
-          - /include
         sources:
           - type: git
             url: https://github.com/libass/libass.git
@@ -80,65 +80,51 @@ modules:
               tag-pattern: ^([\d.]+)$
             commit: bbb3c7f1570a4a021e52683f3fbdf74fe492ae84
             tag: 0.17.4
-  - name: jq
+        post-install:
+          - install -Dm0644 COPYING -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/libass
+  - name: feishin
     buildsystem: simple
     subdir: main
     build-commands:
-      - install -Dm 755 jq-linux-amd64 /app/bin/jq
-    sources:
-      - type: file
-        url: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64
-        sha256: 020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d
-        dest: main
-        x-checker-data:
-          type: json
-          url: https://api.github.com/repos/jqlang/jq/releases/latest
-          tag-query: .tag_name
-          version-query: $tag | sub("^v"; "")
-          url-query: .assets[] | select(.name == "jq-linux-amd64") | .browser_download_url
-
-  - name: feishin
-    buildsystem: simple
-    build-options:
-      append-path: /usr/lib/sdk/node24/bin
-      env:
-        XDG_CACHE_HOME: /run/build/feishin/flatpak-node/cache
-        npm_config_cache: /run/build/feishin/flatpak-node/npm-cache
-        npm_config_offline: "true"
-        npm_config_nodedir: /run/build/feishin/flatpak-node/cache/node-gyp/37.7.0
-    subdir: build
-    build-commands:
-      - ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp
-      - npm i
-      - npm run build
-      - . /run/build/feishin/flatpak-node/electron-builder-arch-args.sh; npx electron-builder --linux dir $ELECTRON_BUILDER_ARCH_ARGS
       - >
-        for i in 128x128 256x256 512x512; do
-          install -Dm 644 dist/linux-unpacked/resources/assets/icons/${i}.png /app/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
+        for i in 128x128 256x256 512x512; do 
+          install -Dm 644 resources/assets/icons/${i}.png ${FLATPAK_DEST}/share/icons/hicolor/${i}/apps/${FLATPAK_ID}.png
         done
-      - cp -ar dist/linux-unpacked /app/main
-      - install -Dm 644 flatpak/org.jeffvli.feishin.desktop /app/share/applications/${FLATPAK_ID}.desktop
-      - install -Dm 644 flatpak/org.jeffvli.feishin.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
-      - install -Dm 644 ../default.json /app/main/resources/default.json
+      - cp -ar . /app/main
+      - envsubst < ../source/feishin.desktop.tmpl > ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - chmod 0644 ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm 644 ../org.jeffvli.feishin.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
       - install -Dm 755 ../feishin.sh /app/bin/feishin
     sources:
-      - generated-sources.json
-      - type: dir
-        path: ../feishin
-        dest: build
-      # - type: archive
-      #   url: https://github.com/jeffvli/feishin/releases/download/v0.21.1/Feishin-linux-x64.tar.xz
-      #   sha256: 3cdbd79b9a8efb6a111fd14144614663576c94af97bcf62aefe4a7c3c45fe8a2
-      #   dest: main
-      #   x-checker-data:
-      #     type: json
-      #     url: https://api.github.com/repos/jeffvli/feishin/releases/latest
-      #     tag-query: .tag_name
-      #     version-query: $tag | sub("^v"; "")
-      #     url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
+      - type: git
+        url: https://github.com/jeffvli/feishin.git
+        dest: source
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
+        commit: ecda918b46747e9f198a3a159a31acff0b953a32
+        tag: v1.8.0
+      - type: archive
+        url: https://github.com/jeffvli/feishin/releases/download/v1.8.0/Feishin-linux-x64.tar.xz
+        sha256: f0161c47d6e429cabc53349f3e4d690c7e6a63e44537fe785813140f1c6c28fc
+        dest: main
+        only-arches:
+          - x86_64
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/jeffvli/feishin/releases/latest
+          tag-query: .tag_name
+          version-query: $tag | sub("^v"; "")
+          url-query: .assets[] | select(.name == "Feishin-linux-x64.tar.xz") | .browser_download_url
       - type: file
-        path: default.json
-        dest-filename: default.json
+        url: https://github.com/jeffvli/feishin/releases/download/v1.8.0/org.jeffvli.feishin.metainfo.xml
+        sha256: c58ea98d908de2d2b126ea47ed745e09a111d40a3f36d71e1c734b7bab176877
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/jeffvli/feishin/releases/latest
+          tag-query: .tag_name
+          version-query: $tag | sub("^v"; "")
+          url-query: .assets[] | select(.name == "org.jeffvli.feishin.metainfo.xml") | .browser_download_url
       - type: script
         dest-filename: feishin.sh
         commands:
@@ -146,11 +132,4 @@ modules:
             for i in {0..9}; do
                 test -S $XDG_RUNTIME_DIR/discord-ipc-$i || ln -sf {app/com.discordapp.Discord,$XDG_RUNTIME_DIR}/discord-ipc-$i;
             done
-          - mkdir -p $XDG_CONFIG_HOME/feishin/ && cp -n /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json
-          # Merge default.json and existing.json if it exists
-          - >
-            {
-              /app/bin/jq -sS '.[0] * .[1]' /app/main/resources/default.json $XDG_CONFIG_HOME/feishin/config.json > /tmp/config.json
-              mv /tmp/config.json $XDG_CONFIG_HOME/feishin/config.json
-            } || true
-          - zypak-wrapper /app/main/feishin
+          - zypak-wrapper /app/main/feishin "$@"
