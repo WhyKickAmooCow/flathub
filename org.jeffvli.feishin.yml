@@ -91,14 +91,10 @@ modules:
       append-path: /usr/lib/sdk/node24/bin:/run/build/feishin/pnpm/bin
       env:
         XDG_CACHE_HOME: /run/build/feishin/flatpak-node/cache
-        PNPM_HOME: /run/build/feishin/flatpak-node
-        npm_config_cache: /run/build/feishin/flatpak-node/cache
         npm_config_store_dir: /run/build/feishin/flatpak-node/pnpm-store
         npm_config_nodedir: /usr/lib/sdk/node24
     subdir: main
     build-commands:
-      - >
-        python3 -c "import os, shutil; base='/run/build/feishin/flatpak-node/pnpm-store/v10'; src=os.path.join(base, 'https+++codeload.github.com+jeffvli+Node-MPV+tar.gz+32b4d64395289ad710c41d481d2707a7acfc228f'); dst=os.path.join(base, 'https+++codeload.github.com+jeffvli+Node-MPV+tar.gz+32b4d64395289ad710c41d481d2707a7acf_60ab61255716e4a393432329c9c8f219'); os.path.isdir(dst) or shutil.copytree(src, dst)"
       - ln ../pnpm/bin/pnpm.cjs ../pnpm/bin/pnpm
       - pnpm install --frozen-lockfile --offline
       - pnpm run build
