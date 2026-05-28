@@ -1,9 +1,9 @@
 app-id: org.jeffvli.feishin
 runtime: org.freedesktop.Platform
-runtime-version: "25.08"
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
-base-version: "25.08"
+base-version: '25.08'
 command: feishin
 separate-locales: false
 
@@ -120,11 +120,11 @@ modules:
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
-        commit: 3c442a2d4034f8f90ff64ca296423bc7e89bf87d
-        tag: v1.11.0
+        commit: 34314bdf467ee942f30d24d1498d103239256ad1
+        tag: v1.12.1
       - type: file
-        url: https://github.com/jeffvli/feishin/releases/download/v1.11.0/org.jeffvli.feishin.metainfo.xml
-        sha256: 14e10aa6e65702369eb5378b1e83b0e4d3b442ed1440e09601785b44b6381672
+        url: https://github.com/jeffvli/feishin/releases/download/v1.12.1/org.jeffvli.feishin.metainfo.xml
+        sha256: 2bf51ad8cf7eb5bb80461330d43720b387f27c74925acc04a0e1ffe37badc322
         x-checker-data:
           type: json
           url: https://api.github.com/repos/jeffvli/feishin/releases/latest
